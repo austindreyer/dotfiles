@@ -215,6 +215,7 @@ When creating or scaffolding a new project, complete the following in order:
 - Always assign authorship of git PR and commit messages to claude if you wrote them
 - When doing writing tables of any kind in sql or snowflake or anywhere else, only do a create if not exists, do not replace any tables unless explicitly told to do so
 - Write resume prompts to a resume_prompt.md in the root directory of the project when prompted, or ask the user after a significant amount of work has been done without one
+- Only automatically modify the working directory. for any changes in an external directory you must prompt me for permission first
 - If you are taking a destructive action you must prompt me before doing it, even if it is described in an approved plan
 - Never use an m dash anywhere
 - If making a github worktree, create it as a sibling directory of the main/dev-container directory
