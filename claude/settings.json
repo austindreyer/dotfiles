@@ -18,5 +18,16 @@
     "type": "command",
     "command": "npx -y ccstatusline@2.2.34",
     "padding": 0
+  },
+  "enabledPlugins": {
+    "superpowers@austin-plugins": true
+  },
+  "extraKnownMarketplaces": {
+    "austin-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "austindreyer/claude-marketplace"
+      }
+    }
   }
 }

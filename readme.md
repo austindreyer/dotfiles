@@ -112,6 +112,10 @@ Then restart any open Claude panes and send one turn in each so the status line 
 
 To undo: `herdr plugin action invoke uninstall --plugin herdr-agent-quota`. This restores the plain ccstatusline command.
 
+### 6. Claude plugins
+
+`claude/settings.json` declares the marketplace (`austin-plugins`, from `austindreyer/claude-marketplace`) and the enabled plugins. On first launch, Claude offers to install them; accept, then restart. If it doesn't prompt, run `/plugin marketplace add austindreyer/claude-marketplace` and `/plugin install superpowers@austin-plugins`. Plugin files live under `claude/plugins/`, which is gitignored. To bump or add a plugin, edit the marketplace repo (see its README), not this one.
+
 ## After making changes
 
 Since the configs are symlinked, edits made through Neovim or by hand under `~/.config/...` are already inside the repo, so just commit as usual:
