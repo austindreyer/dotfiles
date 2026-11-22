@@ -99,7 +99,7 @@ The plugin only writes its configuration when herdr runs it, and the herdr serve
 
 ```bash
 echo "$CLAUDE_SETTINGS_FILE"    # must print ~/dotfiles/claude/settings.json; redo step 2 if empty
-ps eww -p "$(pgrep -f 'herdr server')" | tr ' ' '\n' | grep CLAUDE_SETTINGS_FILE   # the server must have it too
+ps eww -p "$(pgrep -af '^[^ ]*herdr server$')" | tr ' ' '\n' | grep CLAUDE_SETTINGS_FILE   # the server must have it too (-a: inside a herdr pane the server is an ancestor, which pgrep skips by default)
 QUOTA_BIN=$(ls ~/.config/herdr/plugins/github-installations/herdr-agent-quota-*/*/checkout/target/release/herdr-agent-quota | head -1)
 "$QUOTA_BIN" configure --check --agent claude   # preview only; should name ~/dotfiles/claude/settings.json
 herdr plugin action invoke configure --plugin herdr-agent-quota   # same as the "Install / repair agent quota" menu action
