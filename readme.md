@@ -1,30 +1,33 @@
 # dotfiles
 
-Personal config for Claude Code, herdr, Neovim (LazyVim), and Kitty, kept in one repo so a new machine can be set up in a couple of minutes instead of from scratch.
+Personal config for Claude Code, ccstatusline, herdr, Neovim (LazyVim), and Kitty, kept in one repo so a new machine can be set up in a couple of minutes instead of from scratch.
 
 ## What's in here
 
 ```
 dotfiles/
 ├── claude/       # Claude Code global config (CLAUDE.md, settings.json, hooks)
+├── ccstatusline/ # Claude Code status line layout (tokens, context, git)
 ├── herdr/        # herdr terminal workspace config
 ├── nvim/         # Neovim config (LazyVim-based)
 └── kitty/        # Kitty terminal config
 ```
 
 - **claude/**: the global `CLAUDE.md` Claude Code loads on every project, plus `settings.json` and `hooks/`. Pointed to via the `CLAUDE_CONFIG_DIR` environment variable rather than the default `~/.claude`, so it can live in this repo. Because Claude writes all its runtime state (sessions, history, caches, daemon files) into this same directory, `claude/.gitignore` is an **allowlist**: everything is ignored except `CLAUDE.md`, `settings.json` and `hooks/`. To track a new config file, add a `!` line for it there.
+- **ccstatusline/**: layout for [ccstatusline](https://github.com/sirmalloc/ccstatusline), the Claude Code status line. `claude/settings.json` runs it via `npx -y ccstatusline@2.2.34` (pinned so npx doesn't hit the registry on every turn; bump the version there to upgrade). Edit the layout interactively with `npx -y ccstatusline@2.2.34`; it saves to `~/.config/ccstatusline/settings.json`, which is a symlink into this repo.
 - **herdr/**: config for [herdr](https://herdr.dev), a terminal multiplexer for AI coding agents. Only `config.toml` is tracked; `herdr/.gitignore` is an allowlist because herdr installs plugin checkouts and state under `plugins/` and `plugins.json` here.
 - **nvim/**: a LazyVim setup configured as an IDE-style layout: file tree (`neo-tree`) on the left, buffer in the main pane, integrated terminal (`<C-/>`) toggleable at the bottom. Includes the `lang.docker` and `lang.markdown` extras, with markdownlint diagnostics disabled in `nvim/lua/plugins/markdown.lua`.
 - **kitty/**: terminal emulator config.
 
 ## How the configs actually get used
 
-Nothing in `~/.config/nvim`, `~/.config/kitty` or `~/.config/herdr` is a real file. They are symlinks pointing back into this repo:
+Nothing in `~/.config/nvim`, `~/.config/kitty`, `~/.config/herdr` or `~/.config/ccstatusline` is a real file. They are symlinks pointing back into this repo:
 
 ```
 ~/.config/nvim  -> ~/dotfiles/nvim
 ~/.config/kitty -> ~/dotfiles/kitty
 ~/.config/herdr -> ~/dotfiles/herdr
+~/.config/ccstatusline -> ~/dotfiles/ccstatusline
 ```
 
 So editing a config file in either location edits the same file that's tracked in git. There's no separate "live" version to keep in sync.
@@ -37,6 +40,7 @@ brew install kitty neovim node gh herdr
 ln -s ~/dotfiles/nvim  ~/.config/nvim
 ln -s ~/dotfiles/kitty ~/.config/kitty
 ln -s ~/dotfiles/herdr ~/.config/herdr
+ln -s ~/dotfiles/ccstatusline ~/.config/ccstatusline
 echo 'export CLAUDE_CONFIG_DIR="$HOME/dotfiles/claude"' >> ~/.zshrc
 source ~/.zshrc
 ```
