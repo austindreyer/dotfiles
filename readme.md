@@ -34,20 +34,44 @@ So editing a config file in either location edits the same file that's tracked i
 
 ## Setting up a new machine
 
+Run these steps in order. Later steps depend on earlier ones (the Rust plugins need `cargo`, and the quota plugin needs both the plugin build and the `CLAUDE_SETTINGS_FILE` export).
+
+### 1. Clone, install, symlink
+
 ```bash
 git clone git@github.com:YOUR_USERNAME/dotfiles.git ~/dotfiles
-brew install kitty neovim node gh herdr
+brew install kitty neovim node gh herdr rustup
 ln -s ~/dotfiles/nvim  ~/.config/nvim
 ln -s ~/dotfiles/kitty ~/.config/kitty
 ln -s ~/dotfiles/herdr ~/.config/herdr
 ln -s ~/dotfiles/ccstatusline ~/.config/ccstatusline
-echo 'export CLAUDE_CONFIG_DIR="$HOME/dotfiles/claude"' >> ~/.zshrc
-source ~/.zshrc
 ```
 
-Then open `nvim` once and let `lazy.nvim` install its plugins on first launch.
+### 2. Shell environment
 
-### herdr
+```bash
+cat >> ~/.zshrc <<'EOF'
+export CLAUDE_CONFIG_DIR="$HOME/dotfiles/claude"
+export CLAUDE_SETTINGS_FILE="$CLAUDE_CONFIG_DIR/settings.json"
+export PATH="/opt/homebrew/opt/rustup/bin:$HOME/.cargo/bin:$PATH"
+EOF
+source ~/.zshrc
+rustup default stable
+```
+
+- `CLAUDE_CONFIG_DIR` makes Claude Code use `~/dotfiles/claude` instead of `~/.claude`.
+- `CLAUDE_SETTINGS_FILE` is for herdr-agent-quota (step 5). It ignores `CLAUDE_CONFIG_DIR` and would otherwise edit `~/.claude/settings.json`, which Claude never reads on this setup.
+- The `PATH` line puts `cargo` on PATH for the two Rust plugins in step 4.
+
+### 3. Neovim and the Claude status line
+
+Open `nvim` once and let `lazy.nvim` install its plugins on first launch.
+
+The Claude Code status line (ccstatusline) needs nothing extra: `claude/settings.json` runs it through `npx`, and its layout comes from the symlink made in step 1. Start `claude` and send one message to confirm the footer shows model, context and git info.
+
+### 4. herdr integration and plugins
+
+Start herdr with `herdr` from a normal kitty tab (not from inside a herdr pane) so the server inherits the step 2 environment. The prefix is `ctrl+b`; `ctrl+b ?` shows all bindings. After editing `herdr/config.toml`, run `herdr server reload-config`.
 
 Re-run the Claude Code integration on each machine. The hook entry it writes into `claude/settings.json` uses an absolute path, so this rewrites it for the local home directory:
 
@@ -56,27 +80,34 @@ herdr integration install claude
 herdr integration status        # claude should show "current"
 ```
 
-Plugins are not tracked (their checkouts hold machine-specific paths). Reinstall them at the pinned versions below. Plugins run unsandboxed as your user, so read a plugin's `herdr-plugin.toml` before bumping its ref.
+Plugins are not tracked (their checkouts hold machine-specific paths). Reinstall them at the pinned versions below. Plugins run unsandboxed as your user, so read a plugin's `herdr-plugin.toml` before bumping its ref. The last two compile with Rust on install.
 
 ```bash
 herdr plugin install persiyanov/herdr-reviewr --ref v0.52.2          # review agent diffs beside the chat
 herdr plugin install kryptamine/herdr-auto-title --ref v0.23.1       # automatic tab titles
 herdr plugin install ntindle/herdr-resurrect --ref dab5bed632ccb28b480ae1bd601b4f60a41f66f1  # restore sessions after crash/reboot
 herdr plugin install thanhdat77/herdr-navigator --ref v0.3.6         # fuzzy jump to workspaces/agents/projects (needs Rust)
-herdr plugin install levi-qiao/herdr-agent-usage --ref v1.6.2        # Claude quota/context in the sidebar (needs Rust)
+herdr plugin install levi-qiao/herdr-agent-usage --ref v1.6.2        # installs as herdr-agent-quota: Claude 5h/7d quota in the sidebar (needs Rust)
 herdr plugin list
 ```
 
-The two Rust plugins compile on install, so `cargo` must be on PATH first:
+### 5. Connect herdr-agent-quota to Claude (optional, per machine)
+
+Installing the plugin does not connect it to Claude. Its configure step wraps the existing status line: Claude still runs ccstatusline, and the plugin silently collects the 5h/7d quota for the herdr sidebar. It also updates `herdr/config.toml` with its sidebar rows.
 
 ```bash
-brew install rustup
-echo 'export PATH="/opt/homebrew/opt/rustup/bin:$HOME/.cargo/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
-rustup default stable
+echo "$CLAUDE_SETTINGS_FILE"    # must print ~/dotfiles/claude/settings.json; redo step 2 if empty
+QUOTA_BIN=$(ls ~/.config/herdr/plugins/github-installations/herdr-agent-quota-*/*/checkout/target/release/herdr-agent-quota | head -1)
+"$QUOTA_BIN" configure --check --agent claude   # preview; should name ~/dotfiles/claude/settings.json
+"$QUOTA_BIN" configure --apply --agent claude
+herdr server reload-config
 ```
 
-Start herdr with `herdr` from a normal kitty tab (not from inside a herdr pane). The prefix is `ctrl+b`; `ctrl+b ?` shows all bindings. After editing `herdr/config.toml`, run `herdr server reload-config`.
+Then restart any open Claude panes and send one turn in each so the status line reports quota. The herdr action `Install / repair agent quota` does the same thing, but only targets the right file if the herdr server was started from a shell with the step 2 export.
+
+**Do not commit the status line change this step makes.** The wrapped command holds absolute paths to this machine's plugin build. Committed, it would leave the status line blank on any machine that hasn't done step 5. The committed `claude/settings.json` should keep the plain `npx -y ccstatusline@...` command (see "After making changes").
+
+To undo: `"$QUOTA_BIN" configure --uninstall --agent claude`. This restores the plain ccstatusline command.
 
 ## After making changes
 
@@ -88,6 +119,8 @@ git add .
 git commit -m "describe the change"
 git push
 ```
+
+Exception: if this machine has done setup step 5, `claude/settings.json` contains a machine-specific status line wrapper. Stage that file with `git add -p claude/settings.json` and skip the `statusLine` hunk, so the committed command stays `npx -y ccstatusline@...`.
 
 ## Notes / gotchas
 
