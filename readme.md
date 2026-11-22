@@ -95,7 +95,7 @@ herdr plugin list
 
 Installing the plugin does not connect it to Claude. Its configure step wraps the existing status line: Claude still runs ccstatusline, and the plugin silently collects the 5h/7d quota for the herdr sidebar. It also updates `herdr/config.toml` with its sidebar rows.
 
-The plugin only writes its configuration when herdr runs it, and the herdr server passes its own environment to the plugin. So the server must have been started from a shell that already has the step 2 exports. If herdr was running before you did step 2, quit it fully and start it again from a new kitty tab.
+The plugin only writes its configuration when herdr runs it, and the herdr server passes its own environment to the plugin. So the server must have been started from a shell that already has the step 2 exports. If herdr was running before you did step 2, run `herdr server stop` (closing herdr or opening a new `herdr` only detaches or reattaches to the old server), then start `herdr` again from a new kitty tab.
 
 ```bash
 echo "$CLAUDE_SETTINGS_FILE"    # must print ~/dotfiles/claude/settings.json; redo step 2 if empty
