@@ -1,4 +1,5 @@
 {
+  "model": "sonnet",
   "theme": "dark",
   "hooks": {
     "SessionStart": [
