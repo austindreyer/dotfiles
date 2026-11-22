@@ -58,7 +58,18 @@ Plugins are not tracked (their checkouts hold machine-specific paths). Reinstall
 herdr plugin install persiyanov/herdr-reviewr --ref v0.52.2          # review agent diffs beside the chat
 herdr plugin install kryptamine/herdr-auto-title --ref v0.23.1       # automatic tab titles
 herdr plugin install ntindle/herdr-resurrect --ref dab5bed632ccb28b480ae1bd601b4f60a41f66f1  # restore sessions after crash/reboot
+herdr plugin install thanhdat77/herdr-navigator --ref v0.3.6         # fuzzy jump to workspaces/agents/projects (needs Rust)
+herdr plugin install levi-qiao/herdr-agent-usage --ref v1.6.2        # Claude quota/context in the sidebar (needs Rust)
 herdr plugin list
+```
+
+The two Rust plugins compile on install, so `cargo` must be on PATH first:
+
+```bash
+brew install rustup
+echo 'export PATH="/opt/homebrew/opt/rustup/bin:$HOME/.cargo/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+rustup default stable
 ```
 
 Start herdr with `herdr` from a normal kitty tab (not from inside a herdr pane). The prefix is `ctrl+b`; `ctrl+b ?` shows all bindings. After editing `herdr/config.toml`, run `herdr server reload-config`.
