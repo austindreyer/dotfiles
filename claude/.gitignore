@@ -1,11 +1,8 @@
-.claude.json
-.last-cleanup
-backups/
-cache/
-file-history/
-history.jsonl
-plans/
-plugins/
-projects/
-sessions/
-shell-snapshots/
+# Allowlist: CLAUDE_CONFIG_DIR points Claude's whole runtime dir here, so
+# ignore everything it writes and track only real config.
+*
+!.gitignore
+!CLAUDE.md
+!settings.json
+!hooks/
+!hooks/**
