@@ -95,19 +95,22 @@ herdr plugin list
 
 Installing the plugin does not connect it to Claude. Its configure step wraps the existing status line: Claude still runs ccstatusline, and the plugin silently collects the 5h/7d quota for the herdr sidebar. It also updates `herdr/config.toml` with its sidebar rows.
 
+The plugin only writes its configuration when herdr runs it, and the herdr server passes its own environment to the plugin. So the server must have been started from a shell that already has the step 2 exports. If herdr was running before you did step 2, quit it fully and start it again from a new kitty tab.
+
 ```bash
 echo "$CLAUDE_SETTINGS_FILE"    # must print ~/dotfiles/claude/settings.json; redo step 2 if empty
+ps eww -p "$(pgrep -f 'herdr server')" | tr ' ' '\n' | grep CLAUDE_SETTINGS_FILE   # the server must have it too
 QUOTA_BIN=$(ls ~/.config/herdr/plugins/github-installations/herdr-agent-quota-*/*/checkout/target/release/herdr-agent-quota | head -1)
-"$QUOTA_BIN" configure --check --agent claude   # preview; should name ~/dotfiles/claude/settings.json
-"$QUOTA_BIN" configure --apply --agent claude
-herdr server reload-config
+"$QUOTA_BIN" configure --check --agent claude   # preview only; should name ~/dotfiles/claude/settings.json
+herdr plugin action invoke configure --plugin herdr-agent-quota   # same as the "Install / repair agent quota" menu action
+git -C ~/dotfiles diff claude/settings.json herdr/config.toml     # review what it wrote
 ```
 
-Then restart any open Claude panes and send one turn in each so the status line reports quota. The herdr action `Install / repair agent quota` does the same thing, but only targets the right file if the herdr server was started from a shell with the step 2 export.
+Then restart any open Claude panes and send one turn in each so the status line reports quota.
 
 **Do not commit the status line change this step makes.** The wrapped command holds absolute paths to this machine's plugin build. Committed, it would leave the status line blank on any machine that hasn't done step 5. The committed `claude/settings.json` should keep the plain `npx -y ccstatusline@...` command (see "After making changes").
 
-To undo: `"$QUOTA_BIN" configure --uninstall --agent claude`. This restores the plain ccstatusline command.
+To undo: `herdr plugin action invoke uninstall --plugin herdr-agent-quota`. This restores the plain ccstatusline command.
 
 ## After making changes
 
