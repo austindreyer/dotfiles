@@ -142,7 +142,7 @@ Never do containerized tests or builds on a local machine unless explicitly aske
 When creating or scaffolding a new project, complete the following in order:
 
 1. Create and push `main` branch.
-2. Create and switch to `dev-container` branch — all development work originates here.
+2. Create and switch to `dev` branch — all development work originates here.
 3. Seed the `memory/` system with initial project context: goals, stack, key decisions, and any known constraints.
 4. Create a `CLAUDE.md` at the repo root with project-specific rules and context.
 5. Ask about containerization preference if not already stated.
@@ -168,8 +168,8 @@ When creating or scaffolding a new project, complete the following in order:
 
 ## Branch Strategy
 
-- **Initialization:** After seeding a new repo, create and push a `main` branch, then immediately switch to a `dev-container` branch. All development work originates from `dev-container`.
-- **Feature branches** branch off `dev-container` using the prefix `feature/`.
+- **Initialization:** After seeding a new repo, create and push a `main` branch, then immediately switch to a `dev` branch. All development work originates from `dev`.
+- **Feature branches** branch off `dev` using the prefix `feature/`.
 - **Bug fix branches** use the prefix `fix/`.
 - **Maintenance/chore branches** use the prefix `chore/`.
 - **PRs to `main`** are created only when explicitly requested by the user.
@@ -198,7 +198,7 @@ When creating or scaffolding a new project, complete the following in order:
 
 ## CI/CD (GitHub Actions)
 
-- All repos should have a GitHub Actions workflow that runs linting and tests on pushes and PRs targeting `main`, `dev-container`, and `staging` (if it exists).
+- All repos should have a GitHub Actions workflow that runs linting and tests on pushes and PRs targeting `main`, `dev`, and `staging` (if it exists).
 - Do not apply CI workflows to feature, fix, or chore branches.
 - Before pushing to a protected branch, confirm tests pass and there are no linting errors locally.
 - Never knowingly push code that breaks the CI pipeline — fix the issue first.
@@ -218,6 +218,6 @@ When creating or scaffolding a new project, complete the following in order:
 - Only automatically modify the working directory. for any changes in an external directory you must prompt me for permission first
 - If you are taking a destructive action you must prompt me before doing it, even if it is described in an approved plan
 - Never use an m dash anywhere
-- If making a github worktree, create it as a sibling directory of the main/dev-container directory
+- If making a github worktree, create it as a sibling directory of the main/dev directory
 - Store all plan files in a plan directory within the project
 
