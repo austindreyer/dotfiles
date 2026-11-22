@@ -1,0 +1,12 @@
+# herdr config. Symlinked from ~/.config/herdr -> ~/dotfiles/herdr.
+# Full defaults: herdr --default-config. Apply edits: herdr server reload-config
+
+onboarding = false
+
+[theme]
+name = "gruvbox"   # matches the kitty Gruvbox palette
+
+# macOS notifications when an agent finishes or is blocked. Replaces kitty's
+# notify_on_cmd_finish, which only sees herdr itself as one long command.
+[ui.toast]
+delivery = "system"

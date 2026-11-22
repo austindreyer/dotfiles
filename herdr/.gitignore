@@ -1,0 +1,5 @@
+# Allowlist: herdr installs plugin checkouts, binaries and state under
+# ~/.config/herdr/plugins (symlinked here). Track only the config.
+*
+!.gitignore
+!config.toml
