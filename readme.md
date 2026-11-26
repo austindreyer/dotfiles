@@ -52,7 +52,14 @@ ln -s ~/dotfiles/ccstatusline ~/.config/ccstatusline
 ```bash
 cat >> ~/.zshrc <<'EOF'
 export CLAUDE_CONFIG_DIR="$HOME/dotfiles/claude"
-export CLAUDE_SETTINGS_FILE="$CLAUDE_CONFIG_DIR/settings.json"
+export CLAUDE_SETTINGS_FILE="$HOME/.config/herdr-agent-quota/claude-settings.json"
+claude() {
+  if [ -f "$CLAUDE_SETTINGS_FILE" ]; then
+    command claude --settings "$CLAUDE_SETTINGS_FILE" "$@"
+  else
+    command claude "$@"
+  fi
+}
 export PATH="/opt/homebrew/opt/rustup/bin:$HOME/.cargo/bin:$PATH"
 EOF
 source ~/.zshrc
@@ -60,7 +67,7 @@ rustup default stable
 ```
 
 - `CLAUDE_CONFIG_DIR` makes Claude Code use `~/dotfiles/claude` instead of `~/.claude`.
-- `CLAUDE_SETTINGS_FILE` is for herdr-agent-quota (step 5). It ignores `CLAUDE_CONFIG_DIR` and would otherwise edit `~/.claude/settings.json`, which Claude never reads on this setup.
+- `CLAUDE_SETTINGS_FILE` points at a per-machine, untracked settings file that herdr-agent-quota (step 5) edits instead of the tracked `claude/settings.json`. The `claude` function loads it with `--settings`, which Claude applies above the user settings, so the quota status line wraps ccstatusline on this machine while the committed file stays portable. Without the file, `claude` runs normally.
 - The `PATH` line puts `cargo` on PATH for the two Rust plugins in step 4.
 
 ### 3. Neovim and the Claude status line
@@ -93,24 +100,25 @@ herdr plugin list
 
 ### 5. Connect herdr-agent-quota to Claude (optional, per machine)
 
-Installing the plugin does not connect it to Claude. Its configure step wraps the existing status line: Claude still runs ccstatusline, and the plugin silently collects the 5h/7d quota for the herdr sidebar. It also updates `herdr/config.toml` with its sidebar rows.
+Installing the plugin does not connect it to Claude. Its configure step wraps the status line in the file named by `CLAUDE_SETTINGS_FILE`: Claude still runs ccstatusline, and the plugin silently collects the 5h/7d quota for the herdr sidebar. It also updates `herdr/config.toml` with its sidebar rows. Because the wrapper holds absolute paths to this machine's plugin build, it goes in the untracked file from step 2, never in `claude/settings.json`.
 
-The plugin only writes its configuration when herdr runs it, and the herdr server passes its own environment to the plugin. So the server must have been started from a shell that already has the step 2 exports. If herdr was running before you did step 2, run `herdr server stop` (closing herdr or opening a new `herdr` only detaches or reattaches to the old server), then start `herdr` again from a new kitty tab.
+The plugin wraps whatever status line the file already has, so seed it with the ccstatusline command first. Run this from a shell that has the step 2 exports (open a new terminal after step 2):
 
 ```bash
-echo "$CLAUDE_SETTINGS_FILE"    # must print ~/dotfiles/claude/settings.json; redo step 2 if empty
-ps eww -p "$(pgrep -af '^[^ ]*herdr server$')" | tr ' ' '\n' | grep CLAUDE_SETTINGS_FILE   # the server must have it too (-a: inside a herdr pane the server is an ancestor, which pgrep skips by default)
+mkdir -p "$(dirname "$CLAUDE_SETTINGS_FILE")"
+cat > "$CLAUDE_SETTINGS_FILE" <<'EOF'
+{"statusLine": {"type": "command", "command": "npx -y ccstatusline@2.2.34", "padding": 0}}
+EOF
 QUOTA_BIN=$(ls ~/.config/herdr/plugins/github-installations/herdr-agent-quota-*/*/checkout/target/release/herdr-agent-quota | head -1)
-"$QUOTA_BIN" configure --check --agent claude   # preview only; should name ~/dotfiles/claude/settings.json
-herdr plugin action invoke configure --plugin herdr-agent-quota   # same as the "Install / repair agent quota" menu action
-git -C ~/dotfiles diff claude/settings.json herdr/config.toml     # review what it wrote
+HERDR_PLUGIN_STATE_DIR=~/.local/state/herdr/plugins/herdr-agent-quota "$QUOTA_BIN" configure --check --agent claude   # preview only
+HERDR_PLUGIN_STATE_DIR=~/.local/state/herdr/plugins/herdr-agent-quota "$QUOTA_BIN" configure --apply --agent claude
+herdr server reload-config
+git -C ~/dotfiles diff herdr/config.toml     # sidebar rows it wrote
 ```
 
-Then restart any open Claude panes and send one turn in each so the status line reports quota.
+Then restart any open Claude panes (so the `claude` function from step 2 loads the file) and send one turn in each so the status line reports quota. `git status` must not show `claude/settings.json` as modified.
 
-**Do not commit the status line change this step makes.** The wrapped command holds absolute paths to this machine's plugin build. Committed, it would leave the status line blank on any machine that hasn't done step 5. The committed `claude/settings.json` should keep the plain `npx -y ccstatusline@...` command (see "After making changes").
-
-To undo: `herdr plugin action invoke uninstall --plugin herdr-agent-quota`. This restores the plain ccstatusline command.
+To undo, run the same command with `--uninstall --agent claude`, then `herdr server reload-config`. It restores the plain ccstatusline command in the untracked file.
 
 ### 6. Claude plugins
 
@@ -127,7 +135,6 @@ git commit -m "describe the change"
 git push
 ```
 
-Exception: if this machine has done setup step 5, `claude/settings.json` contains a machine-specific status line wrapper. Stage that file with `git add -p claude/settings.json` and skip the `statusLine` hunk, so the committed command stays `npx -y ccstatusline@...`.
 
 ## Notes / gotchas
 
