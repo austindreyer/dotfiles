@@ -22,7 +22,8 @@
   },
   "enabledPlugins": {
     "superpowers@austin-plugins": true,
-    "adversarial-reviewer@austin-plugins": true
+    "adversarial-reviewer@austin-plugins": true,
+    "thinking-red-team@austin-plugins": true
   },
   "extraKnownMarketplaces": {
     "austin-plugins": {

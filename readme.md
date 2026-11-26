@@ -114,7 +114,7 @@ To undo: `herdr plugin action invoke uninstall --plugin herdr-agent-quota`. This
 
 ### 6. Claude plugins
 
-`claude/settings.json` declares the marketplace (`austin-plugins`, from `austindreyer/claude-marketplace`) and the enabled plugins. On first launch, Claude offers to install them; accept, then restart. If it doesn't prompt, run `/plugin marketplace add austindreyer/claude-marketplace` and `/plugin install superpowers@austin-plugins` and `/plugin install adversarial-reviewer@austin-plugins`. Plugin files live under `claude/plugins/`, which is gitignored. To bump or add a plugin, edit the marketplace repo (see its README), not this one.
+`claude/settings.json` declares the marketplace (`austin-plugins`, from `austindreyer/claude-marketplace`) and the enabled plugins. On first launch, Claude offers to install them; accept, then restart. If it doesn't prompt, run `/plugin marketplace add austindreyer/claude-marketplace` and `/plugin install superpowers@austin-plugins`, `/plugin install adversarial-reviewer@austin-plugins`, and `/plugin install thinking-red-team@austin-plugins`. Plugin files live under `claude/plugins/`, which is gitignored. To bump or add a plugin, edit the marketplace repo (see its README), not this one.
 
 ## After making changes
 
