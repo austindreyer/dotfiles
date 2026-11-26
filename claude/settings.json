@@ -21,7 +21,8 @@
     "padding": 0
   },
   "enabledPlugins": {
-    "superpowers@austin-plugins": true
+    "superpowers@austin-plugins": true,
+    "adversarial-reviewer@austin-plugins": true
   },
   "extraKnownMarketplaces": {
     "austin-plugins": {
